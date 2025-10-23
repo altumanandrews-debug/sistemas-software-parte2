@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 2: Sistemas y Software - Ing. Pedro Andrés Altuman</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf-autotable.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        /* --- Configuración General --- */
+        :root {
+            --color-primario: #003366; /* Azul Oscuro (UNIGRAN) */
+            --color-secundario: #0056b3; /* Azul Medio */
+            --color-acento: #007bff; /* Azul Brillante */
+            --color-texto: #333333;
+            --color-fondo-slide: #ffffff;
+            --color-fondo-body: #f4f7f9; /* Gris muy claro */
+            --color-correcto: #28a745;
+            --color-incorrecto: #dc3545;
+            --fuente-principal: 'Open Sans', sans-serif;
+            --fuente-titulos: 'Roboto', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: var(--fuente-principal);
+            background-color: var(--color-fondo-body);
+            color: var(--color-texto);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px; /* Añadido para responsiveness */
+            box-sizing: border-box; /* Añadido para responsiveness */
+        }
+
+        /* --- Contenedor de la Presentación --- */
+        .slide-container {
+            width: 95vw; /* Ajustado para responsiveness */
+            max-width: 1100px;
+            height: 53.4375vw; /* Ratio 16:9 (95 * 9/16) */
+            max-height: 618.75px;
+            background-color: var(--color-fondo-slide);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        /* --- Estilo de Diapositivas --- */
+        .slide {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 40px 60px;
+            display: none; /* Ocultas por defecto */
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            overflow-y: auto; /* Para slides con mucho contenido en móvil */
+        }
+
+        .slide.active {
+            display: flex; /* Visibles */
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .slide.slide-center {
+            align-items: center;
+            text-align: center;
+        }
+
+        /* --- Encabezado y Pie de Página --- */
+        .slide-footer {
+            position: absolute;
+            bottom: 25px;
+            left: 60px;
+            right: 60px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #777;
+        }
+        .slide-footer .page-number {
+            font-weight: 600;
+        }
+
+        /* --- Tipografía y Contenido --- */
+        h1, h2, h3 {
+            font-family: var(--fuente-titulos);
+            font-weight: 700;
+            color: var(--color-primario);
+            margin: 0 0 20px 0;
+            width: 100%;
+            overflow-wrap: break-word; /* Mejora responsive */
+        }
+
+        h1 { /* Título de Portada */
+            font-size: 52px; /* Ajustado */
+            margin-bottom: 10px;
+        }
+
+        h2 { /* Título de Diapositiva */
+            font-size: 38px; /* Ajustado */
+            color: var(--color-secundario);
+            border-bottom: 3px solid var(--color-secundario);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h3 { /* Subtítulo de Portada */
+            font-size: 26px; /* Ajustado */
+            font-weight: 300;
+            color: #555;
+            margin-bottom: 30px; /* Ajustado */
+        }
+        
+        h3.section-title {
+            font-size: 22px; /* Ajustado */
+            color: var(--color-primario);
+            border-bottom: none;
+            margin-bottom: 15px;
+        }
+
+        p, ul {
+            font-size: 18px; /* Ajustado */
+            line-height: 1.6;
+            margin: 0 0 15px 0; /* Ajustado */
+            max-width: 100%;
+            overflow-wrap: break-word; /* Mejora responsive */
+        }
+        
+        ol {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        ul li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+        }
+        ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: var(--color-acento);
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        strong {
+            color: var(--color-secundario);
+            font-weight: 600;
+        }
+
+        /* --- Layout y Gráficos --- */
+        .two-column-layout {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* CAMBIO AQUÍ: Alinea las columnas arriba por defecto */
+            width: 100%;
+            height: 100%;
+            gap: 40px;
+        }
+        .column {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* CAMBIO AQUÍ: Alinea el contenido arriba por defecto */
+        }
+        /* CLASE NUEVA: Para centrar verticalmente solo las columnas que queramos */
+        .column-centered {
+            justify-content: center;
+        }
+        .column-full {
+            width: 100%;
+        }
+        .graphic-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .graphic-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* --- Controles de Navegación --- */
+        .navigation-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-button {
+            background-color: var(--color-secundario);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .nav-button:hover {
+            background-color: var(--color-primario);
+            transform: translateY(-2px);
+        }
+        .nav-button:disabled {
+            background-color: #c0c0c0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .start-quiz-btn {
+            background-color: var(--color-correcto); /* Verde */
+            font-size: 20px;
+            padding: 15px 30px;
+        }
+        .start-quiz-btn:hover {
+            background-color: #218838;
+        }
+
+        /* --- Estilos del Quiz --- */
+        .quiz-login-container, .quiz-container, .quiz-results-container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        #nameInput {
+            font-size: 18px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            width: 70%;
+            margin-top: 15px;
+        }
+        .quiz-question {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--color-primario);
+            margin-bottom: 30px;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .quiz-option {
+            background-color: #f0f4f8;
+            border: 2px solid #d0d9e2;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            text-align: left; /* Alineación para opciones */
+        }
+        .quiz-option:hover:not(:disabled) {
+            background-color: #e6f0ff;
+            border-color: var(--color-acento);
+        }
+        /* Nuevos estilos para feedback de respuesta */
+        .quiz-option.correct {
+            background-color: #d4edda;
+            border-color: var(--color-correcto);
+            color: #155724;
+            font-weight: bold;
+        }
+        .quiz-option.incorrect {
+            background-color: #f8d7da;
+            border-color: var(--color-incorrecto);
+            color: #721c24;
+        }
+        .quiz-option:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        
+        #next-question-btn {
+            background-color: var(--color-acento);
+            margin-top: 20px;
+        }
+        
+        .quiz-results-container h2 {
+            border: none;
+        }
+        .results-score {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+        .results-score .correct {
+            color: var(--color-correcto);
+        }
+        .results-score .total {
+            color: var(--color-primario);
+        }
+        
+        .restart-quiz-btn {
+            background-color: var(--color-acento);
+        }
+        
+        /* --- Ranking y Exportación --- */
+        #ranking-container {
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+        #ranking-list {
+            list-style-type: decimal;
+            padding-left: 40px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        #ranking-list li {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        #export-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap; /* Para móviles */
+        }
+        .export-btn {
+            background-color: #555;
+            padding: 10px 20px;
+            font-size: 15px;
+        }
+        .export-btn:hover {
+            background-color: #333;
+        }
+
+        /* --- Media Queries para Responsiveness --- */
+        @media (max-width: 768px) {
+            .slide-container {
+                width: 100vw;
+                height: auto; /* Altura automática */
+                min-height: 90vh; /* Altura mínima */
+                max-height: none;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .slide {
+                padding: 25px 20px;
+                height: 100%; /* Asegurar que ocupe el contenedor */
+                justify-content: flex-start; /* Alineación al inicio */
+            }
+
+            .slide-footer {
+                left: 20px;
+                right: 20px;
+                bottom: 15px;
+                font-size: 12px;
+            }
+
+            h1 { font-size: 36px; }
+            h2 { font-size: 28px; }
+            h3 { font-size: 22px; }
+            h3.section-title { font-size: 20px; }
+            p, ul, ol, .quiz-option { font-size: 16px; }
+            
+            .two-column-layout {
+                flex-direction: column; /* Apilar columnas */
+                height: auto; /* Altura automática */
+                gap: 20px;
+            }
+            .column {
+                width: 100%;
+                height: auto;
+            }
+            
+            .graphic-container svg {
+                max-width: 80%; /* Reducir gráficos */
+            }
+
+            .navigation-controls {
+                margin-top: 10px;
+            }
+            .nav-button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            #nameInput {
+                width: 90%;
+            }
+            
+            #ranking-list {
+                padding: 15px;
+            }
+        }
+        
+        /* --- NUEVO: Media Query para pantallas MUY pequeñas --- */
+        @media (max-width: 480px) {
+            h1 { font-size: 28px; }
+            h2 { font-size: 24px; }
+            h3 { font-size: 20px; }
+            p, ul, ol, .quiz-option { font-size: 15px; }
+            
+            .slide {
+                padding: 20px 15px; /* Menos padding lateral */
+            }
+            
+            .slide-footer {
+                font-size: 10px;
+                left: 15px;
+                right: 15px;
+                bottom: 10px;
+            }
+            
+            .nav-button {
+                padding: 8px 12px;
+                font-size: 12px;
+                margin: 0 5px;
+            }
+            
+            .start-quiz-btn {
+                font-size: 16px;
+                padding: 12px 24px;
+            }
+            
+            .quiz-question {
+                font-size: 18px; /* Reducir texto de la pregunta */
+            }
+            
+            .results-score {
+                font-size: 24px;
+            }
+            
+            #export-buttons {
+                gap: 10px;
+            }
+            .export-btn {
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+
+        <div class="slide active slide-center" id="slide1">
+            <h3 style="color: var(--color-secundario);">Universidad Gran Asunción</h3>
+            <h1>Sistemas y Software</h1>
+            <p style="font-size: 28px; color: #444;">Unidad I - Parte 2</p>
+            <p style="font-size: 24px; font-weight: 600; color: var(--color-primario); margin-top: 50px;">Ing. Pedro Andrés Altuman</p>
+            <p style="font-size: 18px; color: #777;">Clase 2 - 23 de Octubre</p>
+        </div>
+
+        <div class="slide" id="slide2">
+            <h2>Contenido de la Clase</h2>
+            <div class="column-full">
+                <ul>
+                    <li><strong>Naturaleza de los sistemas y participantes:</strong> ¿Qué es un sistema y quiénes interactúan con él?</li>
+                    <li><strong>Sistemas de información en organizaciones:</strong> El "sistema nervioso" de una empresa.</li>
+                    <li><strong>Proyectos de sistemas: objetivos y alcances:</strong> Cómo planificar el éxito y evitar el fracaso.</li>
+                    <li><strong>Proyecto de desarrollo de software:</strong> El desafío de construir lo intangible.</li>
+                    <li><strong>Ciclo de vida del desarrollo de software (SDLC):</strong> El mapa para construir software.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide" id="slide3">
+            <h2>1. Naturaleza de los Sistemas</h2>
+            <div class="two-column-layout">
+                <div class="column">
+                    <h3 class="section-title">¿Qué es un Sistema?</h3>
+                    <p>Un conjunto de <strong>componentes interrelacionados</strong> que trabajan juntos para alcanzar un <strong>objetivo común</strong>.</p>
+                    <p>Piense en un sistema como una "caja negra" que transforma recursos:</p>
+                    <ul>
+                        <li><strong>Entrada (Input):</strong> Datos, materiales, recursos.</li>
+                        <li><strong>Proceso (Process):</strong> La lógica de transformación.</li>
+                        <li><strong>Salida (Output):</strong> El resultado, información, producto.</li>
+                        <li><strong>Retroalimentación (Feedback):</strong> Información sobre el rendimiento para ajustar el proceso.</li>
+                        <li><strong>Entorno (Environment):</strong> Todo lo que rodea y afecta al sistema.</li>
+                    </ul>
+                </div>
+                <div class="column column-centered">
+                    <div class="graphic-container">
+                        <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                                </marker>
+                            </defs>
+                            <rect x="100" y="50" width="100" height="60" rx="8" fill="#e6f0ff" stroke="#0056b3" stroke-width="2"/>
+                            <text x="150" y="80" text-anchor="middle" font-family="Roboto, sans-serif" font-weight="600" fill="#003366">PROCESO</text>
+                            <line x1="20" y1="80" x2="100" y2="80" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+                            <text x="60" y="70" text-anchor="middle" font-family="Roboto, sans-serif">ENTRADA</text>
+                            <line x1="200" y1="80" x2="280" y2="80" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+                            <text x="240" y="70" text-anchor="middle" font-family="Roboto, sans-serif">SALIDA</text>
+                            <path d="M 240 120 Q 150 150 160 110" stroke="#007bff" stroke-width="2" fill="none" marker-start="url(#arrow)" stroke-dasharray="4"/>
+                            <text x="200" y="140" fill="#007bff" font-size="12px">Feedback</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide4">
+            <h2>1. Participantes del Sistema (Stakeholders)</h2>
+            <div class="two-column-layout">
+                <div class="column">
+                    <p>Un <strong>Stakeholder</strong> (o "parte interesada") es cualquier persona o grupo que <strong>afecta o es afectado</strong> por el sistema.</p>
+                    <p>Ignorar a un stakeholder clave es una receta para el desastre.</p>
+                    <ul>
+                        <li><strong>Usuarios:</strong> Operan el sistema (ej. cajeros, analistas).</li>
+                        <li><strong>Clientes / Patrocinadores:</strong> Pagan por el sistema y definen el "qué".</li>
+                        <li><strong>Gerencia:</strong> Toman decisiones basadas en la info. del sistema.</li>
+                        <li><strong>Equipo de Desarrollo:</strong> Analistas, diseñadores, programadores.</li>
+                        <li><strong>Reguladores:</strong> Entidades externas que imponen reglas (ej. gobierno, bancos).</li>
+                    </ul>
+                </div>
+                <div class="column column-centered">
+                    <div class="graphic-container">
+                        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="100" r="40" fill="#003366" />
+                            <text x="100" y="105" text-anchor="middle" fill="white" font-size="16px" font-weight="bold">SISTEMA</text>
+                            <circle cx="100" cy="20" r="15" fill="#e6f0ff" stroke="#0056b3" stroke-width="2"/>
+                            <text x="100" y="25" text-anchor="middle" font-size="10px">Usuarios</text>
+                            <circle cx="180" cy="100" r="15" fill="#e6f0ff" stroke="#0056b3" stroke-width="2"/>
+                            <text x="180" y="105" text-anchor="middle" font-size="10px">Clientes</text>
+                            <circle cx="100" cy="180" r="15" fill="#e6f0ff" stroke="#0056b3" stroke-width="2"/>
+                            <text x="100" y="185" text-anchor="middle" font-size="10px">Gerencia</text>
+                            <circle cx="20" cy="100" r="15" fill="#e6f0ff" stroke="#0056b3" stroke-width="2"/>
+                            <text x="20" y="105" text-anchor="middle" font-size="10px">Equipo</text>
+                            <line x1="100" y1="80" x2="100" y2="35" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3"/>
+                            <line x1="118" y1="90" x2="165" y2="100" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3"/>
+                            <line x1="100" y1="120" x2="100" y2="165" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3"/>
+                            <line x1="82" y1="90" x2="35" y2="100" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide5">
+            <h2>2. Sistemas de Información (SI) en Organizaciones</h2>
+             <div class="two-column-layout">
+                <div class="column">
+                    <p>Un SI no es solo software. Es un sistema que integra <strong>Personas, Procesos de Negocio y Tecnología</strong> (Hardware, Software, Datos) para apoyar las operaciones y la toma de decisiones.</p>
+                    <p>Su función es <strong>transformar datos crudos</strong> (ej. 100 ventas) en <strong>información útil</strong> (ej. "El producto X es el más vendido en Asunción").</p>
+                </div>
+                <div class="column column-centered">
+                    <div class="graphic-container">
+                        <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="100,10 20,130 180,130" fill="#f0f4f8" stroke="#ccc" stroke-width="1"/>
+                            <line x1="30" y1="105" x2="170" y2="105" stroke="#0056b3" stroke-width="2"/>
+                            <text x="100" y="120" text-anchor="middle" font-size="12px" font-weight="600" fill="#003366">TPS (Operativo)</text>
+                            <line x1="40" y1="80" x2="160" y2="80" stroke="#0056b3" stroke-width="2"/>
+                            <text x="100" y="95" text-anchor="middle" font-size="12px" font-weight="600" fill="#003366">MIS (Táctico)</text>
+                            <line x1="50" y1="55" x2="150" y2="55" stroke="#0056b3" stroke-width="2"/>
+                            <text x="100" y="70" text-anchor="middle" font-size="12px" font-weight="600" fill="#003366">DSS (Táctico/Soporte)</text>
+                            <text x="100" y="40" text-anchor="middle" font-size="12px" font-weight="600" fill="#003366">EIS (Estratégico)</text>
+                            <text x="100" y="20" text-anchor="middle" font-size="10px" fill="#555">(Alta Gerencia)</text>
+                            <text x="100" y="145" text-anchor="middle" font-size="10px" fill="#555">(Nivel Operativo)</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide6">
+            <h2>3. Proyectos de Sistemas: Objetivos y Alcances</h2>
+            <div class="two-column-layout">
+                <div class="column">
+                    <h3 class="section-title">¿Qué es un Proyecto?</h3>
+                    <p>Es un esfuerzo <strong>temporal</strong> (tiene inicio y fin) para crear un producto, servicio o resultado <strong>único</strong>.</p>
+                    <p>Sus <strong>objetivos</strong> deben ser <strong>SMART</strong>:</p>
+                    <ul>
+                        <li><strong>S</strong>pecific (Específicos)</li>
+                        <li><strong>M</strong>easurable (Medibles)</li>
+                        <li><strong>A</strong>chievable (Alcanzables)</li>
+                        <li><strong>R</strong>elevant (Relevantes)</li>
+                        <li><strong>T</strong>ime-bound (Limitados en el tiempo)</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3 class="section-title">El Alcance y la Triple Restricción</h3>
+                    <p>El <strong>Alcance (Scope)</strong> define <strong>qué se hará</strong> y (muy importante) <strong>qué NO se hará</strong>.</p>
+                    <p>Es el pilar de la "Triple Restricción": no puedes cambiar uno sin afectar a los otros. El reto es mantener la <strong>Calidad</strong> en el centro.</p>
+                    <div class="graphic-container">
+                        <svg viewBox="0 0 200 175" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="100,10 10,165 190,165" fill="#e6f0ff" stroke="#0056b3" stroke-width="2"/>
+                            <text x="100" y="35" text-anchor="middle" font-weight="bold" fill="#003366">TIEMPO</text>
+                            <text x="45" y="130" text-anchor="middle" font-weight="bold" fill="#003366">ALCANCE</text>
+                            <text x="155" y="130" text-anchor="middle" font-weight="bold" fill="#003366">COSTO</text>
+                            <circle cx="100" cy="110" r="30" fill="#0056b3"/>
+                            <text x="100" y="115" text-anchor="middle" fill="white" font-weight="bold" font-size="14px">CALIDAD</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide7">
+            <h2>4. Proyecto de Desarrollo de Software</h2>
+            <div class="column-full">
+                <p>Es un tipo <strong>especial</strong> de proyecto, enfocado en crear un producto <strong>intangible</strong>: el software.</p>
+                <h3 class="section-title" style="text-align: center; margin-top: 20px;">¿Qué lo hace diferente?</h3>
+                <ul style="max-width: 800px; margin: 0 auto;">
+                    <li><strong>Intangible:</strong> No puedes "ver" el progreso fácilmente como en una construcción.</li>
+                    <li><strong>Alta Complejidad:</strong> Las interacciones lógicas pueden ser enormes.</li>
+                    <li><strong>Requisitos Cambiantes:</strong> Es muy común que el cliente "descubra" lo que quiere a medida que ve el producto. Esto genera el famoso <strong>"Scope Creep"</strong> (deslizamiento del alcance).</li>
+                    <li><strong>Parte de un todo:</strong> Un proyecto de software (ej. crear el e-commerce) suele ser parte de un proyecto de sistema más grande (ej. lanzar la nueva unidad de negocio online, que incluye marketing, logística y capacitación).</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide8">
+            <h2>5. Ciclo de Vida del Desarrollo (SDLC)</h2>
+            <div class="two-column-layout">
+                <div class="column">
+                    <p>El <strong>Software Development Life Cycle (SDLC)</strong> es un proceso estructurado, un "mapa", que usan los equipos para <strong>planificar, diseñar, construir, probar y desplegar</strong> software de alta calidad.</p>
+                    <p>Define las fases, tareas y entregables clave.</p>
+                    <h3 class="section-title">Fases Típicas:</h3>
+                    <ol style="list-style-type: decimal; padding-left: 30px; font-size: 18px;">
+                        <li><strong>Planificación:</strong> Viabilidad, recursos, costos.</li>
+                        <li><strong>Análisis:</strong> Entender y documentar requisitos (¡Fase clave!).</li>
+                        <li><strong>Diseño:</strong> Arquitectura, bases de datos, interfaces (UI/UX).</li>
+                        <li><strong>Desarrollo:</strong> Escribir el código.</li>
+                        <li><strong>Pruebas (Testing):</strong> Encontrar y corregir errores.</li>
+                        <li><strong>Despliegue (Deployment):</strong> Puesta en producción.</li>
+                        <li><strong>Mantenimiento:</strong> Corregir y mejorar post-lanzamiento.</li>
+                    </ol>
+                </div>
+                <div class="column column-centered">
+                    <div class="graphic-container">
+                        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#0056b3" stroke-width="3" stroke-dasharray="10 5"/>
+                            <text x="100" y="105" text-anchor="middle" font-weight="bold" font-size="18px" fill="#003366">SDLC</text>
+                            
+                            <text x="100" y="30" text-anchor="middle" font-size="12px">1. Planificar</text>
+                            <text x="170" y="70" text-anchor="middle" font-size="12px">2. Analizar</text>
+                            <text x="175" y="135" text-anchor="middle" font-size="12px">3. Diseñar</text>
+                            <text x="100" y="180" text-anchor="middle" font-size="12px">4. Desarrollar</text>
+                            <text x="25" y="135" text-anchor="middle" font-size="12px">5. Probar</text>
+                            <text x="30" y="70" text-anchor="middle" font-size="12px">6. Desplegar</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slide" id="slide9">
+            <h2>5. Modelos SDLC: Cascada vs. Ágil</h2>
+            <div class="two-column-layout">
+                <div class="column" style="border-right: 2px solid #e0e0e0; padding-right: 20px;">
+                    <h3 class="section-title">Modelo Cascada (Waterfall)</h3>
+                    <p>Enfoque <strong>lineal y secuencial</strong>. Debes terminar una fase (ej. Análisis) al 100% antes de empezar la siguiente (ej. Diseño).</p>
+                    <ul>
+                        <li><strong>Ideal para:</strong> Proyectos con requisitos <strong>muy claros y fijos</strong>.</li>
+                        <li><strong>Riesgo:</strong> Muy rígido. Un cambio en la fase 5 es carísimo de arreglar.</li>
+                    </ul>
+                    <div class="graphic-container" style="padding: 0;">
+                        <svg viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="10" width="130" height="15" rx="3" fill="#e6f0ff" stroke="#0056b3" />
+                            <text x="75" y="21" font-size="8px" text-anchor="middle">Análisis</text>
+                            <line x1="75" y1="25" x2="75" y2="35" stroke="#007bff" stroke-width="2" marker-end="url(#arrow)"/>
+                            <rect x="10" y="35" width="130" height="15" rx="3" fill="#e6f0ff" stroke="#0056b3" />
+                            <text x="75" y="46" font-size="8px" text-anchor="middle">Diseño</text>
+                            <line x1="75" y1="50" x2="75" y2="60" stroke="#007bff" stroke-width="2" marker-end="url(#arrow)"/>
+                            <rect x="10" y="60" width="130" height="15" rx="3" fill="#e6f0ff" stroke="#0056b3" />
+                            <text x="75" y="71" font-size="8px" text-anchor="middle">Desarrollo</text>
+                            <line x1="75" y1="75" x2="75" y2="85" stroke="#007bff" stroke-width="2" marker-end="url(#arrow)"/>
+                            <text x="75" y="92" font-size="8px" text-anchor="middle">...</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="column" style="padding-left: 20px;">
+                    <h3 class="section-title">Metodologías Ágiles (Agile)</h3>
+                    <p>Enfoque <strong>iterativo e incremental</strong>. El proyecto se divide en "Sprints" (ciclos cortos de 2-4 semanas) donde se analiza, diseña, construye y prueba una pequeña parte.</p>
+                    <ul>
+                        <li><strong>Ideal para:</strong> Proyectos complejos donde los <strong>requisitos cambian</strong>.</li>
+                        <li><strong>Valor:</strong> Se adapta al cambio y entrega valor al cliente rápidamente.</li>
+                    </ul>
+                    <div class="graphic-container" style="padding: 0;">
+                        <svg viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="75" cy="50" r="40" fill="none" stroke="#007bff" stroke-width="3" stroke-dasharray="5 3"/>
+                            <text x="75" y="55" text-anchor="middle" font-weight="bold" font-size="12px" fill="#003366">Agile</text>
+                            <text x="75" y="25" text-anchor="middle" font-size="9px">Plan</text>
+                            <text x="110" y="55" text-anchor="middle" font-size="9px">Build</text>
+                            <text x="75" y="85" text-anchor="middle" font-size="9px">Test</text>
+                            <text x="40" y="55" text-anchor="middle" font-size="9px">Design</text>
+                            <path d="M 75 10 A 40 40 0 0 1 115 50" fill="none" stroke="#0056b3" stroke-width="2" marker-end="url(#arrow)"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide slide-center" id="slide10">
+            <h2 style="border: none; font-size: 48px;">Conclusión</h2>
+            <p style="font-size: 24px; line-height: 1.7; max-width: 800px;">
+                Los <strong>sistemas</strong> son el motor de las organizaciones.<br>
+                Los <strong>proyectos</strong> nos dan el control para construirlos.<br>
+                El <strong>SDLC</strong> y sus modelos (Cascada, Ágil) son el mapa que nos guía para crear <strong>software de calidad</strong> que resuelva problemas reales.
+            </p>
+            <button class="nav-button start-quiz-btn" onclick="showSlideById('slide-quiz-login')">
+                ¡Comenzar Quiz de Repaso!
+            </button>
+        </div>
+        
+        <div class="slide slide-center" id="slide-quiz-login">
+            <div class="quiz-login-container">
+                <h2>Quiz de Repaso</h2>
+                <p>¡Pongamos a prueba lo aprendido! Por favor, ingresa tu nombre para comenzar.</p>
+                <input type="text" id="nameInput" placeholder="Escribe tu nombre aquí...">
+                <button class="nav-button" onclick="startQuiz()">Comenzar</button>
+            </div>
+        </div>
+
+        <div class="slide slide-center" id="slide-quiz-main">
+            <div class="quiz-container">
+                <div id="quiz-progress" style="font-size: 16px; color: #555; margin-bottom: 10px;"></div>
+                <div class="quiz-question" id="quiz-question-text"></div>
+                <div class="quiz-options" id="quiz-options-container">
+                    </div>
+                <button class="nav-button" id="next-question-btn" style="display: none;" onclick="proceedToNextQuestion()">Siguiente ❯</button>
+            </div>
+        </div>
+
+        <div class="slide slide-center" id="slide-quiz-results">
+            <div class="quiz-results-container">
+                <h2 id="results-title">¡Excelente trabajo!</h2>
+                <p class="results-score">Tu puntaje: <span class="correct" id="user-score">0</span> de <span class="total" id="total-questions">0</span></p>
+                <p id="results-feedback"></p>
+                
+                <div id="ranking-container">
+                    <h3>Ranking (Top 10)</h3>
+                    <ol id="ranking-list">
+                        </ol>
+                </div>
+                
+                <div id="export-buttons">
+                    <button class="nav-button export-btn" onclick="exportRankingPDF()">Exportar a PDF</button>
+                    <button class="nav-button export-btn" onclick="exportRankingExcel()">Exportar a Excel</button>
+                </div>
+
+                <button class="nav-button restart-quiz-btn" onclick="restartQuiz()" style="margin-top: 20px;">Volver a intentar</button>
+                <button class="nav-button" onclick="showSlide(0)">Volver a la Portada</button>
+            </div>
+        </div>
+        
+        <div class="slide-footer">
+            <span>Ing. Pedro Andrés Altuman - Universidad Gran Asunción</span>
+            <span class="page-number" id="page-counter"></span>
+        </div>
+
+    </div>
+
+    <div class="navigation-controls">
+        <button class="nav-button" id="prevBtn" onclick="plusSlides(-1)">❮ Anterior</button>
+        <button class="nav-button" id="nextBtn" onclick="plusSlides(1)">Siguiente ❯</button>
+    </div>
+
+    <script>
+        // --- Lógica de la Presentación ---
+        
+        let slideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        // Filtramos las slides del quiz para la navegación normal
+        const contentSlides = document.querySelectorAll('.slide:not([id^="slide-quiz"])');
+        const totalContentSlides = contentSlides.length;
+
+        showSlide(slideIndex);
+
+        function plusSlides(n) {
+            slideIndex += n;
+            showSlide(slideIndex);
+        }
+
+        function showSlide(n) {
+            slideIndex = n;
+            
+            // Ocultar todas las slides
+            slides.forEach(slide => slide.classList.remove('active'));
+
+            // Validar límites
+            if (slideIndex >= totalContentSlides) { slideIndex = totalContentSlides - 1; }
+            if (slideIndex < 0) { slideIndex = 0; }
+            
+            // Mostrar la slide de contenido actual
+            if(contentSlides[slideIndex]) {
+                contentSlides[slideIndex].classList.add('active');
+            }
+
+            // Actualizar contador
+            document.getElementById('page-counter').textContent = `Diapositiva ${slideIndex + 1} de ${totalContentSlides}`;
+
+            // Actualizar botones
+            document.getElementById('prevBtn').disabled = (slideIndex === 0);
+            document.getElementById('nextBtn').disabled = (slideIndex === totalContentSlides - 1);
+            
+            // Ocultar/mostrar navegación si estamos en el quiz
+            const onQuizSlide = contentSlides[slideIndex] && contentSlides[slideIndex].id === 'slide10'; // Última slide de contenido
+            const navControls = document.querySelector('.navigation-controls');
+            if (navControls) {
+                navControls.style.display = 'flex';
+                document.getElementById('prevBtn').style.display = onQuizSlide ? 'none' : 'inline-block';
+                document.getElementById('nextBtn').style.display = onQuizSlide ? 'none' : 'inline-block';
+            }
+        }
+        
+        function showSlideById(id) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            // Ocultar navegación principal durante el quiz
+            document.querySelector('.navigation-controls').style.display = 'none';
+        }
+
+        // --- Lógica del Quiz ---
+
+        const quizData = [
+            {
+                question: "Un conjunto de componentes interrelacionados que trabajan para un objetivo común se llama...",
+                options: ["Un proyecto", "Un sistema", "Un software", "Un requisito"],
+                correct: 1
+            },
+            {
+                question: "¿Quién es un 'Stakeholder'?",
+                options: ["Solo el cliente que paga", "Solo el programador", "Cualquier persona afectada o con interés en el sistema", "El gerente del proyecto"],
+                correct: 2
+            },
+            {
+                question: "Un sistema para registrar ventas en un supermercado (nivel operativo) es un ejemplo de...",
+                options: ["EIS (Estratégico)", "DSS (Soporte a Decisiones)", "MIS (Gerencial)", "TPS (Operativo)"],
+                correct: 3
+            },
+            {
+                question: "Definir 'qué NO se hará' en un proyecto es parte fundamental del...",
+                options: ["Alcance (Scope)", "Costo", "Tiempo", "Feedback"],
+                correct: 0
+            },
+            {
+                question: "El modelo de SDLC que es lineal y secuencial (terminar una fase para empezar la siguiente) se llama:",
+                options: ["Ágil (Agile)", "Scrum", "Cascada (Waterfall)", "Iterativo"],
+                correct: 2
+            },
+            {
+                question: "¿Qué significa la 'M' en los objetivos SMART de un proyecto?",
+                options: ["Mínimo", "Medible", "Monetario", "Mantenible"],
+                correct: 1
+            },
+            {
+                question: "Tiempo, Alcance y Costo son los pilares de la...",
+                options: ["Metodología Ágil", "Triple Restricción", "Fase de Análisis", "Caja Negra"],
+                correct: 1
+            },
+            {
+                question: "Cuando el cliente añade requisitos no planificados durante el desarrollo, se produce el...",
+                options: ["Feedback", "Scope Creep", "SDLC", "Despliegue"],
+                correct: 1
+            },
+            {
+                question: "¿Cuál es la fase 'clave' del SDLC para entender y documentar qué debe hacer el sistema?",
+                options: ["Planificación", "Diseño", "Desarrollo", "Análisis"],
+                correct: 3
+            },
+            {
+                question: "¿Qué modelo SDLC es mejor para proyectos complejos donde los requisitos cambian constantemente?",
+                options: ["Cascada (Waterfall)", "Ágil (Agile)", "Modelo en V", "Todos por igual"],
+                correct: 1
+            }
+        ];
+
+
+        let userName = "";
+        let currentQuestionIndex = 0;
+        let userScore = 0;
+
+        function startQuiz() {
+            userName = document.getElementById('nameInput').value;
+            if (userName.trim() === "") {
+                alert("Por favor, ingresa tu nombre.");
+                return;
+            }
+            currentQuestionIndex = 0;
+            userScore = 0;
+            showSlideById('slide-quiz-main');
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                showQuizResults();
+                return;
+            }
+
+            document.getElementById('next-question-btn').style.display = 'none';
+            const questionData = quizData[currentQuestionIndex];
+            document.getElementById('quiz-question-text').textContent = questionData.question;
+            
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = "";
+
+            questionData.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'quiz-option';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            document.getElementById('quiz-progress').textContent = `Pregunta ${currentQuestionIndex + 1} de ${quizData.length}`;
+        }
+
+        function selectAnswer(selectedIndex) {
+            const questionData = quizData[currentQuestionIndex];
+            const correctIndex = questionData.correct;
+            const options = document.querySelectorAll('.quiz-option');
+
+            // Deshabilitar todas las opciones
+            options.forEach(btn => btn.disabled = true);
+
+            // Marcar respuesta
+            if (selectedIndex === correctIndex) {
+                userScore++;
+                options[selectedIndex].classList.add('correct');
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[correctIndex].classList.add('correct'); // Mostrar la correcta
+            }
+            
+            // Mostrar botón "Siguiente"
+            document.getElementById('next-question-btn').style.display = 'inline-block';
+        }
+
+        function proceedToNextQuestion() {
+            currentQuestionIndex++;
+            loadQuizQuestion();
+        }
+
+        function showQuizResults() {
+            showSlideById('slide-quiz-results');
+            document.getElementById('results-title').textContent = `¡Excelente trabajo, ${userName}!`;
+            document.getElementById('user-score').textContent = userScore;
+            document.getElementById('total-questions').textContent = quizData.length;
+            
+            let feedback = "";
+            const percentage = (userScore / quizData.length) * 100;
+            if (percentage === 100) {
+                feedback = "¡Perfecto! Tienes todos los conceptos claros.";
+            } else if (percentage >= 70) {
+                feedback = "¡Muy bien hecho! Un gran repaso.";
+            } else {
+                feedback = "Buen intento. ¡Un repaso más a las diapositivas te ayudará a afianzar todo!";
+            }
+            document.getElementById('results-feedback').textContent = feedback;
+            
+            // Guardar y mostrar ranking
+            saveAndDisplayRanking(userName, userScore);
+        }
+        
+        function saveAndDisplayRanking(name, score) {
+            let rankings = [];
+            try {
+                rankings = JSON.parse(localStorage.getItem('quizRankings')) || [];
+            } catch (e) {
+                console.error("Error al leer el ranking:", e);
+                rankings = [];
+            }
+            
+            rankings.push({ name, score });
+            
+            // Ordenar por puntaje (descendente)
+            rankings.sort((a, b) => b.score - a.score);
+            
+            // Guardar en localStorage
+            try {
+                localStorage.setItem('quizRankings', JSON.stringify(rankings));
+            } catch (e) {
+                console.error("Error al guardar el ranking:", e);
+            }
+
+            // Mostrar en la lista (Top 10)
+            const rankingList = document.getElementById('ranking-list');
+            rankingList.innerHTML = "";
+            const topRankings = rankings.slice(0, 10);
+            
+            if (topRankings.length === 0) {
+                rankingList.innerHTML = "<li>Aún no hay puntajes. ¡Sé el primero!</li>";
+            } else {
+                topRankings.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.name}: ${item.score} / ${quizData.length}`;
+                    rankingList.appendChild(li);
+                });
+            }
+        }
+        
+        function restartQuiz() {
+            // Mostramos navegación de nuevo
+            document.querySelector('.navigation-controls').style.display = 'flex';
+            showSlide(0); // Volver a la portada
+        }
+        
+        // --- Funciones de Exportación ---
+        
+        function getRankingData() {
+            try {
+                return JSON.parse(localStorage.getItem('quizRankings')) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function exportRankingPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const rankings = getRankingData();
+            
+            const bodyData = rankings.map((r, i) => [
+                i + 1, 
+                r.name, 
+                `${r.score}/${quizData.length}`
+            ]);
+
+            doc.text("Ranking del Quiz - Sistemas y Software", 14, 15);
+            doc.autoTable({
+                head: [['Posición', 'Nombre', 'Puntaje']],
+                body: bodyData,
+                startY: 20
+            });
+            
+            doc.save('ranking_quiz.pdf');
+        }
+        
+        function exportRankingExcel() {
+            const rankings = getRankingData();
+            const data = rankings.map((r, i) => ({
+                Posicion: i + 1,
+                Nombre: r.name,
+                Puntaje: r.score,
+                Total: quizData.length
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Ranking");
+            
+            XLSX.writeFile(wb, "ranking_quiz.xlsx");
+        }
+
+    </script>
+</body>
+</html>
