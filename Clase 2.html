@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sistemas y Software – Parte 2 — Prof. Ing. Pedro Andrés Altuman</title>
+<style>
+  :root{
+    --bg:#f6f9fc;
+    --card:#ffffff;
+    --accent:#183A61; /* formal blue */
+    --muted:#6b7b8f;
+    --accent-2:#2b5e9a;
+  }
+  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+  .screen{
+    box-sizing:border-box;
+    background:linear-gradient(180deg, var(--bg), #ffffff);
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+  }
+  .frame{
+    width:100%;
+    max-width:1200px;
+    height:calc(100vh - 36px);
+    background:var(--card);
+    box-shadow:0 6px 24px rgba(24,58,97,0.08);
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 26px;
+    border-bottom:1px solid #e6eef7;
+    background: linear-gradient(90deg, rgba(24,58,97,0.04), rgba(43,94,154,0.02));
+  }
+  .title{
+    display:flex;flex-direction:column;
+  }
+  .title h1{margin:0;font-size:20px;color:var(--accent);}
+  .title p{margin:0;font-size:13px;color:var(--muted);}
+  .controls{display:flex;gap:10px;align-items:center;}
+  button{background:var(--accent);color:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+  button.secondary{background:#ffffff;color:var(--accent);border:1px solid #d7e2f0}
+  .main{
+    flex:1;display:flex;padding:22px;
+  }
+  .slide{
+    flex:1;
+    border-radius:8px;
+    background:linear-gradient(180deg,#fff,#fbfdff);
+    padding:34px;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:flex-start;
+    overflow:auto;
+  }
+  .sidebar{
+    width:340px;margin-left:18px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .card{
+    background:linear-gradient(180deg,#fff,#fcfeff);
+    border-radius:8px;padding:14px;border:1px solid #eef5fb;
+    box-shadow: 0 4px 10px rgba(24,58,97,0.03);
+  }
+  h2{color:var(--accent);margin:0 0 8px 0;font-size:22px}
+  h3{margin:0 0 8px 0;color:var(--accent-2);font-size:16px}
+  p{color:#243243;margin:0 0 10px 0;line-height:1.4}
+  ul{margin:8px 0 0 18px;color:#2b3b4a}
+  .footer{
+    display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid #e6eef7;background:linear-gradient(90deg, rgba(24,58,97,0.02), rgba(255,255,255,0));
+  }
+  .small{font-size:12px;color:var(--muted)}
+  .slide-title{display:flex;justify-content:space-between;width:100%;align-items:flex-start}
+  .content-block{margin-top:18px;width:100%}
+  /* Word cloud */
+  .word-cloud{display:flex;flex-wrap:wrap;gap:8px;padding:8px;border-radius:8px;border:1px dashed #e9f0f8;background:#fbfdff}
+  .word-cloud span{display:inline-block;padding:4px 6px;border-radius:6px;background:transparent;cursor:default;color:var(--accent-2)}
+  /* Quiz */
+  .options{display:flex;flex-direction:column;gap:8px}
+  .opt{padding:10px;border-radius:8px;border:1px solid #e8f0f9;background:#fff;cursor:pointer}
+  .opt.correct{border-color:#2e8a4d;background:#ecfff1}
+  .opt.wrong{border-color:#c94444;background:#fff1f0}
+  /* Ranking */
+  .rank-list{list-style:none;padding:0;margin:0}
+  .rank-item{padding:10px;border-radius:8px;border:1px solid #e6eef7;background:#fff;margin-bottom:8px;cursor:grab}
+  .drag-hint{font-size:12px;color:var(--muted);margin-top:6px}
+  /* Open text */
+  textarea{width:100%;min-height:80px;padding:10px;border-radius:8px;border:1px solid #e6eef7;resize:vertical}
+  input[type="range"]{width:100%}
+  .results{margin-top:12px}
+  .export{display:flex;gap:8px;align-items:center}
+  .codebox{background:#f0f6fc;border-radius:6px;padding:6px 8px;font-family:monospace;color:var(--accent-2);font-size:13px}
+  @media (max-width:1100px){
+    .sidebar{display:none}
+    .frame{height:100%}
+  }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="frame" role="application" aria-label="Presentación interactiva">
+    <header>
+      <div class="title">
+        <h1>Sistemas y Software – Parte 2</h1>
+        <p>Cátedra de Sistemas de Información — Prof. Ing. Pedro Andrés Altuman</p>
+      </div>
+      <div class="controls">
+        <button id="prevBtn" class="secondary">◀ Anterior</button>
+        <button id="nextBtn">Siguiente ▶</button>
+        <button id="exportBtn" class="secondary">Exportar respuestas</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <section class="slide" id="slideArea">
+        <!-- dynamic slide content -->
+      </section>
+
+      <aside class="sidebar" id="sidebar">
+        <div class="card">
+          <h3>Modo Presentador</h3>
+          <p class="small">Navega con las flechas. Las respuestas se guardan localmente y puedes exportarlas.</p>
+          <div style="margin-top:8px;">
+            <div class="small">Diapositiva <span id="slideIndex">1</span>/<span id="slideCount">15</span></div>
+            <div class="drag-hint" style="margin-top:6px">Tema: enseñanza universitaria • 90 min</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Resultados (vista rápida)</h3>
+          <div id="quickResults" class="small">No hay respuestas aún.</div>
+        </div>
+
+        <div class="card">
+          <h3>Instrucciones</h3>
+          <p class="small">Abrí este archivo en pantalla completa. Pide a los estudiantes responder en el mismo equipo o por turnos. Presiona <strong>Exportar respuestas</strong> para guardar los resultados.</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="footer">
+      <div class="small">Cátedra de Sistemas de Información — Prof. Ing. Pedro Andrés Altuman</div>
+      <div class="small">Formato 16:9 • Interactivo</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Slide definitions */
+const slides = [
+  { id:"title", type:"title", title:"Sistemas y Software – Parte 2", subtitle: "Cátedra de Sistemas de Información – Prof. Ing. Pedro Andrés Altuman", note:"Bienvenida e instrucciones iniciales." },
+  { id:"wc1", type:"wordcloud", title:"Actividad inicial — Nube de palabras", prompt:"¿Qué palabras asocian con 'sistema' o 'software'?", time:60 },
+  { id:"content1", type:"content", title:"¿Qué es un sistema?", bullets:[
+      "Conjunto de elementos interrelacionados que trabajan para un objetivo.",
+      "Sistemas abiertos vs cerrados; físicos vs abstractos."
+    ]},
+  { id:"participants", type:"multiple", title:"Participantes en un sistema", prompt:"¿Quiénes participan en el desarrollo de sistemas? (seleccioná la mejor opción)", options:[
+      "Solo desarrolladores",
+      "Usuario final y administradores",
+      "Analistas, desarrolladores, usuarios y administradores",
+      "Solo patrocinadores"
+    ], correct:2},
+  { id:"si", type:"content", title:"Sistemas de información (SI)", bullets:[
+      "Componentes: personas, datos, hardware, software, procedimientos, redes.",
+      "Tipos: TPS, MIS, DSS, ERP, CRM.",
+      "Importancia estratégica en la toma de decisiones."
+    ]},
+  { id:"ranking1", type:"ranking", title:"Ranking — Componentes de un SI", prompt:"Ordená de más a menos importantes los componentes de un SI (arrastrar):",
+    items:["Personas","Datos","Software","Hardware","Procedimientos"] },
+  { id:"project", type:"content", title:"Proyectos de sistemas: objetivos y alcance", bullets:[
+      "Definición de proyecto de sistemas.",
+      "Objetivo general vs objetivos específicos.",
+      "Cómo definir alcance y restricciones."
+    ]},
+  { id:"scale1", type:"scale", title:"Claridad del alcance", prompt:"En tu experiencia, ¿qué tan claro suele ser el alcance de un proyecto en tu entorno?", min:1, max:5 },
+  { id:"lifecycle", type:"content", title:"Ciclo de vida del desarrollo de software", bullets:[
+      "Modelos: Cascada, Incremental, Espiral, Ágil (Scrum).",
+      "Ventajas y desventajas de cada uno."
+    ]},
+  { id:"quiz1", type:"multiple", title:"Quiz rápido", prompt:"¿Qué modelo promueve entregas rápidas y flexibles?", options:["Cascada","Espiral","Ágil (Scrum)","Incremental"], correct:2},
+  { id:"wc2", type:"wordcloud", title:"Ventaja del enfoque ágil", prompt:"Escribí una ventaja del enfoque ágil (una palabra o frase corta)." },
+  { id:"group", type:"open", title:"Actividad de grupo", prompt:"En grupos: describan un sistema real e identifiquen participantes, tipo de sistema y modelo propuesto (resumir en 2-3 líneas)." },
+  { id:"mini", type:"content", title:"Mini proyecto: Sistema de tickets técnicos", bullets:[
+      "Registro, asignación, seguimiento, cierre.",
+      "Roles: solicitante, técnico, administrador."
+    ]},
+  { id:"task", type:"task", title:"Evaluación y entrega", bullets:[
+      "Tarea individual (entrega hoy): documento (máx.1 pág.) con descripción de un SI real, participantes, objetivo general, 2 objetivos específicos y modelo de ciclo de vida.",
+      "Rúbrica: participación (3), comprensión (3), tarea (4)."
+    ]}
+];
+
+let state = {
+  index:0,
+  responses: {} // keyed by slide id -> array of responses
+};
+
+/* Helpers */
+function $(id){return document.getElementById(id)}
+function showSlide(i){
+  if(i<0) i=0;
+  if(i>=slides.length) i=slides.length-1;
+  state.index = i;
+  const s = slides[i];
+  $('slideIndex').textContent = i+1;
+  $('slideCount').textContent = slides.length;
+  renderSlide(s);
+  updateQuickResults();
+}
+function ensureResp(id){
+  if(!state.responses[id]) state.responses[id]=[];
+}
+function pushResp(id,val){
+  ensureResp(id);
+  state.responses[id].push({ts:Date.now(), value:val});
+  updateQuickResults();
+}
+
+/* Renderers */
+function renderSlide(s){
+  const area = $('slideArea');
+  area.innerHTML = '';
+  const header = document.createElement('div');
+  header.className = 'slide-title';
+  const left = document.createElement('div');
+  const h = document.createElement('h2'); h.textContent = s.title;
+  left.appendChild(h);
+  if(s.note){
+    const note = document.createElement('div'); note.className='small'; note.textContent = s.note;
+    left.appendChild(note);
+  }
+  header.appendChild(left);
+  area.appendChild(header);
+
+  const block = document.createElement('div');
+  block.className='content-block';
+
+  if(s.type==='title'){
+    const p = document.createElement('p'); p.style.fontSize='16px'; p.textContent = s.subtitle || '';
+    block.appendChild(p);
+    const instr = document.createElement('p'); instr.className='small'; instr.style.marginTop='18px'; instr.textContent = 'Instrucción: Pide a los estudiantes participar en la nube de palabras y respuestas.';
+    block.appendChild(instr);
+  }
+  else if(s.type==='content'){
+    if(s.bullets){
+      const ul = document.createElement('ul');
+      s.bullets.forEach(b=>{
+        const li = document.createElement('li'); li.textContent=b; ul.appendChild(li);
+      });
+      block.appendChild(ul);
+    }
+  }
+  else if(s.type==='wordcloud'){
+    const p = document.createElement('p'); p.textContent = s.prompt || 'Escribí algo:';
+    block.appendChild(p);
+    const form = document.createElement('div');
+    const input = document.createElement('input'); input.type='text'; input.placeholder='Escribí una palabra o frase y presioná Enter'; input.style.width='60%'; input.style.padding='10px'; input.style.borderRadius='6px'; input.style.border='1px solid #e6eef7';
+    form.appendChild(input);
+    const btn = document.createElement('button'); btn.textContent='Enviar'; btn.style.marginLeft='8px';
+    form.appendChild(btn);
+    block.appendChild(form);
+    const cloudWrap = document.createElement('div'); cloudWrap.className='word-cloud'; cloudWrap.style.marginTop='12px';
+    block.appendChild(cloudWrap);
+
+    function renderCloud(){
+      // aggregate
+      const arr = (state.responses[s.id]||[]).map(r=>String(r.value).trim()).filter(x=>x);
+      const counts = {};
+      arr.forEach(v=>{
+        // split by spaces? keep phrases whole
+        const key = v.toLowerCase();
+        counts[key] = (counts[key]||0)+1;
+      });
+      cloudWrap.innerHTML='';
+      const max = Math.max(1, ...Object.values(counts));
+      Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).forEach(k=>{
+        const span = document.createElement('span'); span.textContent=k;
+        const size = 12 + Math.round((counts[k]/max)*28);
+        span.style.fontSize = size+'px';
+        cloudWrap.appendChild(span);
+      });
+    }
+
+    btn.addEventListener('click',()=>{
+      const v = input.value.trim();
+      if(!v) return;
+      pushResp(s.id, v);
+      input.value='';
+      renderCloud();
+    });
+    input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); btn.click(); }});
+    renderCloud();
+  }
+  else if(s.type==='multiple'){
+    const p = document.createElement('p'); p.textContent = s.prompt || '';
+    block.appendChild(p);
+    const opts = document.createElement('div'); opts.className='options';
+    s.options.forEach((o,idx)=>{
+      const d = document.createElement('div'); d.className='opt'; d.textContent = o;
+      d.addEventListener('click',()=>{
+        pushResp(s.id, {selected:idx, text:o});
+        // show result and mark correctness
+        const correctIdx = s.correct;
+        Array.from(opts.children).forEach((c,ci)=>{
+          c.classList.remove('correct','wrong');
+          if(ci===correctIdx) c.classList.add('correct');
+        });
+        if(idx!==correctIdx) d.classList.add('wrong');
+      });
+      opts.appendChild(d);
+    });
+    block.appendChild(opts);
+  }
+  else if(s.type==='ranking'){
+    const p = document.createElement('p'); p.textContent = s.prompt || '';
+    block.appendChild(p);
+    const ul = document.createElement('ul'); ul.className='rank-list';
+    ul.id='rankUL';
+    s.items.forEach((it,idx)=>{
+      const li = document.createElement('li'); li.className='rank-item'; li.draggable=true; li.textContent = it;
+      li.dataset.index = idx;
+      li.addEventListener('dragstart',dragStart);
+      li.addEventListener('dragover',dragOver);
+      li.addEventListener('drop',dropItem);
+      ul.appendChild(li);
+    });
+    block.appendChild(ul);
+    const saveBtn = document.createElement('button'); saveBtn.textContent='Guardar orden'; saveBtn.style.marginTop='10px';
+    saveBtn.addEventListener('click',()=>{
+      const order = Array.from(ul.children).map(li=>li.textContent);
+      pushResp(s.id, order);
+      // feedback
+      const res = document.createElement('div'); res.className='small results'; res.textContent='Orden guardado.';
+      block.appendChild(res);
+    });
+    block.appendChild(saveBtn);
+  }
+  else if(s.type==='scale'){
+    const p = document.createElement('p'); p.textContent = s.prompt || '';
+    block.appendChild(p);
+    const label = document.createElement('div'); label.className='small'; label.textContent = s.min+' — '+s.max;
+    const range = document.createElement('input'); range.type='range'; range.min=s.min; range.max=s.max; range.value = Math.round((s.min+s.max)/2);
+    range.addEventListener('input',()=>{ label.textContent = 'Valor: '+range.value + ' (escala '+s.min+' a '+s.max+')';});
+    block.appendChild(range); block.appendChild(label);
+    const btn = document.createElement('button'); btn.textContent='Enviar'; btn.style.marginTop='10px';
+    btn.addEventListener('click',()=>{ pushResp(s.id, range.value); const ok=document.createElement('div'); ok.className='small results'; ok.textContent='Valor enviado: '+range.value; block.appendChild(ok);});
+    block.appendChild(btn);
+  }
+  else if(s.type==='open'){
+    const p = document.createElement('p'); p.textContent = s.prompt || '';
+    block.appendChild(p);
+    const ta = document.createElement('textarea');
+    const submit = document.createElement('button'); submit.textContent='Enviar';
+    submit.style.marginTop='8px';
+    submit.addEventListener('click',()=>{
+      const v = ta.value.trim();
+      if(!v) return;
+      pushResp(s.id, v);
+      ta.value='';
+      const ok = document.createElement('div'); ok.className='small results'; ok.textContent='Respuesta registrada.';
+      block.appendChild(ok);
+    });
+    block.appendChild(ta); block.appendChild(submit);
+  }
+  else if(s.type==='task'){
+    if(s.bullets){
+      const ul = document.createElement('ul');
+      s.bullets.forEach(b=>{ const li=document.createElement('li'); li.textContent=b; ul.appendChild(li); });
+      block.appendChild(ul);
+    }
+    const note = document.createElement('p'); note.className='small'; note.textContent='Recordá: entrega el mismo día. Puntaje total: 10 pts.';
+    block.appendChild(note);
+  }
+
+  area.appendChild(block);
+
+  /* presenter quick results update area also show snapshot of response counts */
+  updateQuickResults();
+}
+
+/* Drag handlers for ranking */
+let dragged = null;
+function dragStart(e){ dragged = e.target; e.dataTransfer.setData('text/plain','drag');}
+function dragOver(e){ e.preventDefault(); if(e.target && e.target.classList.contains('rank-item')) e.target.style.borderTop='2px solid #e0efff'; }
+function dropItem(e){ e.preventDefault(); if(!dragged) return; const target = e.target; if(target && target.classList.contains('rank-item')){ target.style.borderTop=''; const ul = target.parentNode; ul.insertBefore(dragged, target.nextSibling); } dragged=null; }
+
+/* Quick results summarizer */
+function updateQuickResults(){
+  const el = $('quickResults');
+  const keys = Object.keys(state.responses);
+  if(keys.length===0){ el.textContent='No hay respuestas aún.'; return; }
+  const parts = keys.map(k=>{
+    const arr = state.responses[k];
+    // summarize by type
+    const sdef = slides.find(s=>s.id===k);
+    if(!sdef) return `${k}: ${arr.length} respuestas`;
+    if(sdef.type==='wordcloud' || sdef.type==='open' || sdef.type==='ranking' || sdef.type==='scale') {
+      return `${sdef.title}: ${arr.length} respuesta(s)`;
+    }
+    if(sdef.type==='multiple'){
+      // tally selections
+      const tally = {};
+      arr.forEach(r=>{ const sel = r.value!==undefined? (r.value.selected!==undefined? r.value.selected : (r.selected!==undefined? r.selected : r.value)); const key = String(sel); tally[key] = (tally[key]||0)+1;});
+      const opts = sdef.options.map((o,idx)=>`${o} (${tally[idx]||0})`);
+      return `${sdef.title}: ${opts.join(', ')}`;
+    }
+    return `${sdef.title}: ${arr.length} respuesta(s)`;
+  });
+  el.innerHTML = parts.map(p=>`<div style="margin-bottom:6px">${p}</div>`).join('');
+}
+
+/* Export function */
+function exportResponses(){
+  const data = {
+    meta:{ title: "Sistemas y Software – Parte 2", professor: "Prof. Ing. Pedro Andrés Altuman", created: new Date().toISOString() },
+    slides: slides,
+    responses: state.responses
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download = 'respuestas_sistemas_software_parte2.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+/* Navigation */
+$('prevBtn').addEventListener('click', ()=> showSlide(state.index-1));
+$('nextBtn').addEventListener('click', ()=> showSlide(state.index+1));
+$('exportBtn').addEventListener('click', exportResponses);
+
+/* init */
+showSlide(0);
+
+/* Keyboard navigation */
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowRight') showSlide(state.index+1);
+  if(e.key==='ArrowLeft') showSlide(state.index-1);
+});
+</script>
+</body>
+</html>
